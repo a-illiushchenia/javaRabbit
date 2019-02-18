@@ -1,54 +1,58 @@
-import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import executors.MainCommandCreator;
-import jsonPojo.MainCommand;
+import messageCreator.CreateMessageFactory;
+import messageCreator.MessageCreator;
 
 public class JavaRabbitMessageEmiter {
 
-    private static final String EXCHANGE_NAME = "topic_logs";
-    private static final String MESSAGE_ROUTING_KEY = "RK";
+    private static final String exchangeName = "topic_logs";
+    private static final String messageRoutingKey = "RK";
 
-    private static final int SCRIPT_COUNT = 100;
-    private static final int OPERATOR_COUNT = 300;
-    private static final int TASK_COUNT = 100000;
-    private static final int SCHEDULE_COUNT = 20;
-    private static final int SCHEMA_LEVEL = 6;
-    private static final int SCHEMA_LEVEL_NODE_COUNT = 3;
+    private static String hostName = "";
+    private static int portNumber = 5672;
+    private static String virtualHost = "/";
+    private static String userName = "";
+    private static String password = "";
 
-    private static final String HOST_NAME = "10.60.61.51";
-    private static final int PORT_NUMBER = 5672;
-    private static final String VIRTUAL_HOST = "/";
-    private static final String USER_NAME = "tkp";
-    private static final String PASSWORD = "tkp";
+    private static int sleep = 0;
+    private static int count = 0;
 
-
+    private static String messageCreatorType = "Empty";
 
     public static void main(String[] argv) throws Exception {
 
-        int userName = Integer.parseInt(argv[0]);
-        int sleep = Integer.parseInt(argv[0]);
-        int count = Integer.parseInt(argv[1]);
+        hostName = argv[0];
+        userName = argv[1];
+        password = argv[2];
+
+        if(argv.length > 3) {
+            messageCreatorType = argv[3];
+        }
+
+        if(argv.length > 4) {
+            sleep = Integer.parseInt(argv[4]);
+        }
+        if(argv.length > 5) {
+            count = Integer.parseInt(argv[5]);
+        }
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setUsername(USER_NAME);
-        factory.setPassword(PASSWORD);
-        factory.setVirtualHost(VIRTUAL_HOST);
-        factory.setHost(HOST_NAME);
-        factory.setPort(PORT_NUMBER);
+        factory.setUsername(userName);
+        factory.setPassword(password);
+        factory.setVirtualHost(virtualHost);
+        factory.setHost(hostName);
+        factory.setPort(portNumber);
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
 
-            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
-
-            MainCommand mainCommand = new MainCommandCreator().createMainCommand(SCRIPT_COUNT, OPERATOR_COUNT, TASK_COUNT, SCHEDULE_COUNT, SCHEMA_LEVEL, SCHEMA_LEVEL_NODE_COUNT);
+            channel.exchangeDeclare(exchangeName, "topic");
 
             for(int i = 0; i <= count; i++) {
-                mainCommand.setNumber(i);
-                String mainCommandJson = new Gson().toJson(mainCommand);
-                String message = mainCommandJson;
-                channel.basicPublish(EXCHANGE_NAME, MESSAGE_ROUTING_KEY, null, message.getBytes("UTF-8"));
+                MessageCreator mainCommand = new CreateMessageFactory().getMessageCreator(messageCreatorType);
+                mainCommand.setParams(i);
+                String message = mainCommand.create();
+                channel.basicPublish(exchangeName, messageRoutingKey, null, message.getBytes("UTF-8"));
                 System.out.println(" [x] Sent '" + i);
                 if(sleep > 0) {
                     Thread.sleep(sleep);

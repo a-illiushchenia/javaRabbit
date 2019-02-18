@@ -1,4 +1,4 @@
-package jsonPojo;
+package messageCreator.IOCreateCampaign.jsonPojo;
 
 import java.util.List;
 import java.util.Objects;

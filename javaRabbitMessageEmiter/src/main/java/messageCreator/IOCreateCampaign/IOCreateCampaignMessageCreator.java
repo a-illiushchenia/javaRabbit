@@ -1,25 +1,62 @@
-package executors;
+package messageCreator.IOCreateCampaign;
 
-import jsonPojo.*;
+import com.google.gson.Gson;
+import messageCreator.IOCreateCampaign.jsonPojo.*;
+import messageCreator.MessageCreator;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainCommandCreator {
+public class IOCreateCampaignMessageCreator implements MessageCreator {
 
-    public MainCommand createMainCommand(int scriptCount, int operatorCount, int taskCount, int scheduleCount, int schemaLevel, int schemaLevelNodeCount) {
-        MainCommand mainCommandResult = new MainCommand();
+    private int order = 0;
 
-        mainCommandResult.setScripts(getScripts(scriptCount));
-        mainCommandResult.setOperators(getOperators(operatorCount));
-        mainCommandResult.setTasks(getTasks(taskCount));
-        mainCommandResult.setSchedules(getSchedules(scheduleCount));
+    private int scriptCount = 100;
+    private int operatorCount = 300;
+    private int taskCount = 100000;
+    private int scheduleCount = 20;
+    private int schemaLevel = 6;
+    private int schemaLevelNodeCount = 3;
+
+    private static MainCommand mainCommand = null;
+
+    @Override
+    public String create() {
+        if(mainCommand == null){
+            createMainCommand();
+        }
+        mainCommand.setOrder(order);
+        String mainCommandJson = new Gson().toJson(mainCommand);
+        return mainCommandJson;
+    }
+
+    @Override
+    public void setParams(Object... params) {
+        for(int i = 0; i < params.length; i++) {
+            switch (i){
+                case 0: order = (int)params[0]; break;
+                case 1: scriptCount = (int)params[1]; break;
+                case 2: operatorCount = (int)params[2]; break;
+                case 3: taskCount = (int)params[3]; break;
+                case 4: scheduleCount = (int)params[4]; break;
+                case 5: schemaLevel = (int)params[5]; break;
+                case 6: schemaLevelNodeCount = (int)params[6]; break;
+            }
+        }
+    }
+
+    public void createMainCommand() {
+
+        mainCommand = new MainCommand();
+
+        mainCommand.setScripts(getScripts(scriptCount));
+        mainCommand.setOperators(getOperators(operatorCount));
+        mainCommand.setTasks(getTasks(taskCount));
+        mainCommand.setSchedules(getSchedules(scheduleCount));
         List<Schema> schemaList = new ArrayList<>();
         schemaList.add(getSchema(schemaLevel, schemaLevelNodeCount));
-        mainCommandResult.setSchemas(schemaList);
-
-        return mainCommandResult;
+        mainCommand.setSchemas(schemaList);
     }
 
 

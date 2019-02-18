@@ -3,21 +3,29 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-import jsonPojo.MainCommand;
+import messageCreator.IOCreateCampaign.jsonPojo1.MainCommand;
 
 public class JavaRabbitMessageReceiver {
 
-    private static final String EXCHANGE_NAME = "topic_logs";
-    private static final String queueName = "methods.point.query.control_123";
+    private static String exchangeName = "default_exchange";
+    private static String queueName = "methods.point.query.control";
 
-    private static final String userName = "tkp";
-    private static final String password = "tkp";
-    private static final String virtualHost = "/";
-    private static final String hostName = "10.60.61.51";
-    private static final int portNumber = 5672;
+    private static String hostName = "";
+    private static int portNumber = 5672;
+    private static String virtualHost = "/";
+    private static String userName = "";
+    private static String password = "";
+
+    private static int sleep = 0;
 
     public static void main(String[] argv) throws Exception {
-        Integer sleep = Integer.parseInt(argv[0]);
+
+        hostName = argv[0];
+        userName = argv[1];
+        password = argv[2];
+
+        sleep = Integer.parseInt(argv[3]);
+
 
         ConnectionFactory factory = new ConnectionFactory();
         factory.setUsername(userName);
@@ -28,9 +36,9 @@ public class JavaRabbitMessageReceiver {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+        channel.exchangeDeclare(exchangeName, "topic");
         channel.queueDeclare(queueName, true, false, false, null);
-        channel.queueBind(queueName, EXCHANGE_NAME, "#");
+        channel.queueBind(queueName, exchangeName, "#");
 
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 

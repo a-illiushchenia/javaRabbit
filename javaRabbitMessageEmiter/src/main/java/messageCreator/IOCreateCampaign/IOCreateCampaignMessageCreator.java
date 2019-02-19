@@ -2,6 +2,7 @@ package messageCreator.IOCreateCampaign;
 
 import com.google.gson.Gson;
 import messageCreator.IOCreateCampaign.jsonPojo.*;
+import messageCreator.MainMessage;
 import messageCreator.MessageCreator;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -10,15 +11,14 @@ import java.util.List;
 
 public class IOCreateCampaignMessageCreator implements MessageCreator {
 
-    private int order = 0;
-
     private int scriptCount = 100;
     private int operatorCount = 300;
-    private int taskCount = 100000;
+    private int taskCount = 10000;
     private int scheduleCount = 20;
     private int schemaLevel = 6;
     private int schemaLevelNodeCount = 3;
 
+    private MainMessage mainMessage = new MainMessage();
     private static MainCommand mainCommand = null;
 
     @Override
@@ -26,16 +26,16 @@ public class IOCreateCampaignMessageCreator implements MessageCreator {
         if(mainCommand == null){
             createMainCommand();
         }
-        mainCommand.setOrder(order);
-        String mainCommandJson = new Gson().toJson(mainCommand);
-        return mainCommandJson;
+        mainMessage.setContent(toJson(mainCommand));
+        return toJson(mainMessage);
     }
 
     @Override
     public void setParams(Object... params) {
-        for(int i = 0; i < params.length; i++) {
+        mainMessage.setOrder((int) params[0]);
+
+        for(int i = 1; i < params.length; i++) {
             switch (i){
-                case 0: order = (int)params[0]; break;
                 case 1: scriptCount = (int)params[1]; break;
                 case 2: operatorCount = (int)params[2]; break;
                 case 3: taskCount = (int)params[3]; break;

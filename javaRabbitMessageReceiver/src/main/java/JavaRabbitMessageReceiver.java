@@ -3,7 +3,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-import messageCreator.IOCreateCampaign.jsonPojo1.MainCommand;
+import messageParcer.MainMessage;
+import org.apache.log4j.PropertyConfigurator;
 
 public class JavaRabbitMessageReceiver {
 
@@ -19,6 +20,9 @@ public class JavaRabbitMessageReceiver {
     private static int sleep = 0;
 
     public static void main(String[] argv) throws Exception {
+
+        String log4jConfPath = "./properties/log4j.properties";
+        PropertyConfigurator.configure(log4jConfPath);
 
         hostName = argv[0];
         userName = argv[1];
@@ -44,8 +48,8 @@ public class JavaRabbitMessageReceiver {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            MainCommand mainCommand = new Gson().fromJson(message, MainCommand.class);
-            System.out.println(" [x] Received '" + mainCommand.getNumber());
+            MainMessage mainMessage = new Gson().fromJson(message, MainMessage.class);
+            System.out.println(" [x] Received '" + mainMessage.getOrder() + " object size = " + mainMessage.getContent().length());
 
             try {
                 if(sleep > 0){

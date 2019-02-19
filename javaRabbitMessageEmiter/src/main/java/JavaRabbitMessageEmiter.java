@@ -6,7 +6,7 @@ import messageCreator.MessageCreator;
 
 public class JavaRabbitMessageEmiter {
 
-    private static final String exchangeName = "topic_logs";
+    private static final String exchangeName = "default_exchange";
     private static final String messageRoutingKey = "RK";
 
     private static String hostName = "";
@@ -19,6 +19,7 @@ public class JavaRabbitMessageEmiter {
     private static int count = 0;
 
     private static String messageCreatorType = "Empty";
+    private static int randomCreatorStrLength = 10;
 
     public static void main(String[] argv) throws Exception {
 
@@ -26,16 +27,10 @@ public class JavaRabbitMessageEmiter {
         userName = argv[1];
         password = argv[2];
 
-        if(argv.length > 3) {
-            messageCreatorType = argv[3];
-        }
-
-        if(argv.length > 4) {
-            sleep = Integer.parseInt(argv[4]);
-        }
-        if(argv.length > 5) {
-            count = Integer.parseInt(argv[5]);
-        }
+        messageCreatorType = argv[3];
+        randomCreatorStrLength = Integer.parseInt(argv[4]);
+        sleep = Integer.parseInt(argv[5]);
+        count = Integer.parseInt(argv[6]);
 
         ConnectionFactory factory = new ConnectionFactory();
         factory.setUsername(userName);
@@ -50,7 +45,12 @@ public class JavaRabbitMessageEmiter {
 
             for(int i = 0; i <= count; i++) {
                 MessageCreator mainCommand = new CreateMessageFactory().getMessageCreator(messageCreatorType);
-                mainCommand.setParams(i);
+
+                if(messageCreatorType.equals("Random")){
+                    mainCommand.setParams(i, randomCreatorStrLength);
+                }else {
+                    mainCommand.setParams(i);
+                }
                 String message = mainCommand.create();
                 channel.basicPublish(exchangeName, messageRoutingKey, null, message.getBytes("UTF-8"));
                 System.out.println(" [x] Sent '" + i);
